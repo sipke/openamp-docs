@@ -152,3 +152,7 @@ This RPMsg Multi Services Sample is demonstrated in the following reference impl
 * :ref:`ST Micro Platforms<demos-ST-work-label>`
 
    * Refer to `Zephyr Build Instructions <https://github.com/OpenAMP/openamp-system-reference/tree/main/examples/zephyr/rpmsg_multi_services>`_.
+
+* :ref:`NXP <reference_board_NXP>`
+
+   * Refer to Application Note `AN13970 Running Zephyr RTOS <https://www.nxp.com/docs/en/application-note/AN13970.pdf>`_
