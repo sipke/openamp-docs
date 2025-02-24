@@ -131,3 +131,5 @@ html_context = {
 
 print(f"url_base: {url_base}  version: {version}  is_release: {is_release}  is_pr: {is_pr}")
 print(f"html_context: {html_context}")
+
+print(f"doxylink.openamp_lib: {doxylink['openamp_lib']}")
