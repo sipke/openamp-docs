@@ -66,7 +66,7 @@ extensions = [
 html_base = f"{pwd}/_build/html/"
 
 doxylink = {
-    'openamp_lib': (f'{pwd}/_readthedocs/openamp/openamp_lib.tag', f'{pwd}/_readthedocs/openamp/')
+    'openamp_lib': (f'{pwd}/_readthedocs/openamp/doc/openamp_lib.tag', f'{pwd}/_readthedocs/openamp/doc')
 }
 
 pdf_documents = [('index', u'openamppdf', u'Sample openamppdf doc', u'Tammy Leino'),]
