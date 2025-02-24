@@ -133,3 +133,6 @@ print(f"url_base: {url_base}  version: {version}  is_release: {is_release}  is_p
 print(f"html_context: {html_context}")
 
 print(f"doxylink.openamp_lib: {doxylink['openamp_lib']}")
+
+#print("doxygen/openamp", os.listdir(f"{pwd}/_build/html/doxygen/openamp"))
+print("_readthedocs/openamp", os.listdir(f'{pwd}/_readthedocs/openamp/'))
