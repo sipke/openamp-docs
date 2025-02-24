@@ -60,7 +60,14 @@ extensions = [
     'sphinx.ext.todo',
     'rst2pdf.pdfbuilder',
     'myst_parser',
+    'sphinxcontrib.doxylink',
 ]
+
+html_base = f"{pwd}/_build/html/"
+
+doxylink = {
+    'openamp_lib': (f'{html_base}doxygen/openamp/openamp_lib.tag', f'{html_base}doxygen/openamp/')
+}
 
 pdf_documents = [('index', u'openamppdf', u'Sample openamppdf doc', u'Tammy Leino'),]
 
