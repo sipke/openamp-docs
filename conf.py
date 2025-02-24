@@ -136,3 +136,4 @@ print(f"doxylink.openamp_lib: {doxylink['openamp_lib']}")
 
 #print("doxygen/openamp", os.listdir(f"{pwd}/_build/html/doxygen/openamp"))
 print("_readthedocs/openamp", os.listdir(f'{pwd}/_readthedocs/openamp/'))
+print("_readthedocs/openamp/doc", os.listdir(f'{pwd}/_readthedocs/openamp/doc'))
