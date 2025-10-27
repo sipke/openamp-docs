@@ -2,9 +2,33 @@
 RPMsg Communication Flow
 =========================
 
+This section details the communication flow for the :ref:`media access layer<rpmsg-protocol-mac>`
+of RPMsg Protocol, in the transmit (main to remote) and receive (remote to main) directions.
+
+Two :ref:`VRINGs<rpmsg-protocol-figure-vring>` are used, each with its own available and used
+ring buffers and associated descriptors. VRING1 for transmit and VRING0 for receive.
+
+An example implementation is the main controller running Linux as per
+`Virtio RPMsg bus vring allocation <https://github.com/torvalds/linux/blob/master/drivers/rpmsg/virtio_rpmsg_bus.c#L878.>`_,
+where VRING0 is vqs[0] or the receive (rvq) VRING and VRING1 is vqs[1] or the transmit (svq)
+VRING.
+
+Transmit RPMsg flow (main to remote)
+------------------------------------
+
+For the transmission of RPMsgs from the main controller to the remote, the main controller,
+performs the following actions on the transmit VRING (VRING1):
+
+* gets a transmission buffer from the "used" queue of VRING1
+* fills the RPMsg header and paylos of this buffer
+* enqueues this RPMsg to the "avail" queue of VRING1 by ????
+
+
+
+
 The following figure describes the sequence used for transaction of a RPMsg message from one core
 to the other.
-The sequence differs according to the roles of core A and core B. In the figure above, core A is
+The sequence differs according to the roles of core A and core B. In the figure below, core A is
 the main controller and core B is the remote. The main controller allocates buffers used for
 the transmission from the “used” ring buffer of a vring, writes RPMsg Header and application
 payload to it and then enqueues it to the “avail” ring buffer.
