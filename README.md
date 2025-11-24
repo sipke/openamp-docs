@@ -70,14 +70,14 @@ When possible it is recommended to use a
 [Python virtual environment](https://docs.python.org/3/library/venv.html)
 (Python 3.3 and higher, required by Ubuntu 24.04 or higher):
 
-```shell
+```console
 python3 -m venv .venv
 . .venv/bin/activate
 ```
 
 Install pip modules
 
-```shell
+```console
 python3 -m pip install -r requirements.txt
 ```
 
@@ -85,21 +85,21 @@ python3 -m pip install -r requirements.txt
 
 When using a virtual environment activate it before each build session:
 
-```shell
+```console
 cd openamp-docs
 . .venv/bin/activate
 ```
 
 ### Build and view the html documents
 
-```shell
+```console
 make html
 xdg-open _build/html/index.html
 ```
 
 ### Build and view the pdf
 
-```shell
+```console
 make pdf
 xdg-open _build/pdf/openamppdf.pdf
 ```
