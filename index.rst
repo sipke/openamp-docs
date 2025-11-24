@@ -17,3 +17,9 @@ Welcome to the OpenAMP Project Documentation
    protocol_details/index
    docs/porting_guide
    openamp/glossary
+
+
+.. toctree::
+   :hidden:
+
+   README
