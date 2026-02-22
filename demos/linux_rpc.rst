@@ -102,8 +102,12 @@ This Linux RPC Sample is demonstrated in the following reference implementations
 
 * :ref:`Linux Inter Process <inter-process-reference-label>`
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Demo Compile and Execution Instructions
 
-   ../open-amp/apps/examples/linux_rpc_demo/README
+********************************
+Linux RPC Demo Build Information
+********************************
+
+.. toctree::
+   :maxdepth: 2
+
+   ../openamp-system-reference/examples/legacy_apps/examples/linux_rpc_demo/README
