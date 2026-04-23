@@ -4,6 +4,35 @@
 Porting GuideLine
 =================
 
+********
+Hardware
+********
+
+The porting of OpenAMP to a new :ref:`multi-core computer system<overview-intro>` involves the
+setup of its hardware on both cores to suit the OpenAMP architecture.
+
+This involves carving out memory to be shared between the cores to facilitate
+:ref:`Interprocessor Communications (IPC)<ipc-work-label>` using
+:ref:`RPMsg<overview-rpmsg-work-label>`, with or without interrupts for asynchronous inter-core notification
+and defining the firmware execution flow either independently or with
+:ref:`Remoteproc<overview-remoteproc-work-label>` and associated :ref:`Resource Table<resource-table>`.
+
+Memory and interrupt allocation should be considered carefully for any port. Refer to
+:doc:`System Wide Considerations<system_considerations>` for an overview.
+
+Shared Memory
+=============
+
+Shared memory is required for the OpenAMP inter processor communication's
+:ref:`Physical Layer<rpmsg-layers-work-label> for the :doc:`RPMsg<rpmsg_design>` protocol.
+How and what memory is allocated is implementation specific but should be a suitable and
+dedicated memory region of SRAM or DDR, configured to ensure accessible by both cores and
+have any caching capabilities are disabled for that region of memory if necessary.
+
+********************
+Hardware Abstraction
+********************
+
 The `OpenAMP Framework <https://github.com/OpenAMP/open-amp>`_ uses
 `libmetal <https://github.com/OpenAMP/libmetal>`_ to provide abstractions that allows for porting
 of the OpenAMP Framework to various software environments (operating systems and bare metal

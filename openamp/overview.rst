@@ -2,6 +2,8 @@
 Project Overview
 ================
 
+.. _overview-intro:
+
 *************
 OpenAMP Intro
 *************
