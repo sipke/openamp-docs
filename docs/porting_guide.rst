@@ -4,6 +4,249 @@
 Porting GuideLine
 =================
 
+********
+Hardware
+********
+
+The porting of OpenAMP to a new :doc:`multicore system <../openamp/overview>` requires
+some hardware for inter-processor communication.
+
+- Shared memory for
+
+    - the :ref:`RPMsg<overview-rpmsg-work-label>` buffer
+    - the :ref:`Virtio Rings<docs/data_structures_content:Shared virtqueue structure>`
+    - the :ref:`Resource Table<resource-table>`
+      (optional if the RPMsg host is not the Linux kernel)
+
+- Optional, but recommended, mailboxes acting as a ring bell interrupt on processors to
+  notify of message reception
+
+Memory and interrupt assignments are critical design choices for any port. For a broader overview, refer to
+:doc:`../protocol_details/system_considerations`.
+
+
+Shared Memory
+=============
+
+Shared memory forms the :ref:`physical layer<rpmsg-layers-work-label>` for
+:doc:`RPMsg <../docs/rpmsg_design>` protocol.
+The specific memory type and layout are implementation dependent, but should be a dedicated
+SRAM or DDR region accessible by both cores.
+Cache maintenance operations are performed by OpenAMP if the
+`WITH_DCACHE <https://github.com/OpenAMP/open-amp/blob/main/cmake/options.cmake>`_ cmake flag
+is set. It should be enabled if your shared memory region is caching and the core you are
+building for is not cache coherent with the remote side.
+
+Memory requirements are generally modest because :doc:`RPMsg <../docs/rpmsg_design>` is a
+control‑oriented protocol rather than a high‑bandwidth streaming channel. For example, using
+the Linux RPMsg packet size of 512 bytes, a 8kB shared memory region can hold roughly 16
+messages. The size and message count should be tuned based on system needs.
+
+In addition to the messages, the Virtio ring structures need memory allocated. For Linux
+this equates to 2*4k, to align with kernel page size, but likely less for other implementations.
+
+If the :ref:`Resource Table<resource-table>` is not embedded in the remote firmware image,
+additional shared memory may be required for a dynamic table.
+
+:ref:`Remoteproc<overview-remoteproc-work-label>` can also use shared memory for optional
+trace buffers.
+
+
+Memory Protection
+-----------------
+
+Because this is shared memory, appropriate hardware memory protection should be configured
+on both processors.
+
+Depending on the memory type, this may involve configuring the Memory Management Unit (MMU),
+Memory Protection Unit (MPU), or Input-Output Memory Management Unit (IOMMU) to enforce
+correct access permissions.
+
+
+Notification
+------------
+
+:doc:`RPMsg <../docs/rpmsg_design>` uses :ref:`ring buffers<rpmsg-protocol-mac>` in shared
+memory, so either processor can poll for incoming messages. However, asynchronous notification
+via interrupts is recommended.
+
+Most heterogeneous SoCs include a built‑in inter‑core interrupt mechanism, often called a
+mailbox. The sending core raises the mailbox interrupt to notify the other core that a vring has
+been updated for message reception, buffer release, or both.
+The core can then manage the message in normal context, for example, in a thread, or in
+interrupt.
+
+
+***************
+Porting Options
+***************
+
+OpenAMP consists of two major components: :ref:`Remoteproc<overview-remoteproc-work-label>`
+and :doc:`RPMsg <../docs/rpmsg_design>`. These can be ported
+independently or together.
+
+For both there is a concept of a driver and device role which affect the virtio transport layer,
+specified when setting up the virtio structure, via the definitions:
+
+:openamp_doc_link:`VIRTIO_DEV_DEVICE <VIRTIO_DEV_DEVICE>` or
+:openamp_doc_link:`VIRTIO_DEV_DRIVER <VIRTIO_DEV_DRIVER>`
+
+When creating the virtio device (not to be confused with the device role), the driver role
+indicates the main processor and the device role the remote processor.
+
+In OpenAMP
+`RPMsg Virtio <https://github.com/OpenAMP/open-amp/blob/main/lib/include/openamp/rpmsg_virtio.h>`_
+these are aliased as
+:openamp_doc_link:`RPMSG_HOST <RPMSG_HOST>` and :openamp_doc_link:`RPMSG_REMOTE <RPMSG_REMOTE>`
+respectively.
+
+The support for either of these roles can be enabled or disabled through the main CMake options,
+as defined in OpenAMP's
+`cmake/options.cmake <https://github.com/OpenAMP/open-amp/blob/main/cmake/options.cmake>`_
+
+WITH_VIRTIO_DRIVER, sets the VIRTIO_DRIVER_SUPPORT and
+WITH_VIRTIO_DEVICE, sets the VIRTIO_DEVICE_SUPPORT definition.
+
+.. literalinclude:: ../open-amp/cmake/options.cmake
+   :language: cmake
+   :lines: 40-41
+
+These definitions affect what is compiled into the main/driver or remote/device image and can be used
+to limit code size if required. By default both are enabled.
+
+One can think of the implementation options as four features, three of which are part of Remoteproc.
+
+- Full Remoteproc as life cycle management, implemented in driver role on main processor
+- Remoteproc Virtio transport layer for Virtio protocol
+- The resource table, implemented as part of the full Remoteproc for main processor or
+  independently in device role on remote processor
+- RPMsg, implementing IPC and Virtio transport layer if not implemented by Remoteproc
+
+The resulting porting implementation approaches include:
+
+- On the main processor
+
+  - :openamp_doc_link:`Remoteproc <remoteproc>` as driver role to manage remote processor
+    life cycle
+  - :openamp_doc_link:`Remoteproc Virtio <remoteproc_virtio>` to implement the virtio driver transport layer
+  - :openamp_doc_link:`RPMsg <rpmsg_device>`
+
+- On the remote processor
+
+  - Optional :openamp_doc_link:`Remoteproc <remoteproc>` as device role for the
+    :openamp_doc_link:`resource table management <resource_table>`
+  - :openamp_doc_link:`Remoteproc Virtio <remoteproc_virtio>` device role to implement the
+    virtio device transport layer
+  - :openamp_doc_link:`RPMsg <rpmsg_device>`
+
+Additional details and examples are provided in the subsequent sections.
+
+Remoteproc Framework
+====================
+
+The Remoteproc framework as the name suggests is responsible for remote processor management.
+For both roles this includes resource table management and/or setup of the virtio transport
+and as the driver role also the remote processor lifecycle management.
+
+Remoteproc Driver Role
+----------------------
+
+In the driver role, Remoteproc includes  management of the remote processor lifecycle and
+resource table discovery.
+
+Most :ref:`OpenAMP Samples and Demos<demos-reference-samples>` provide examples of lifecycle management for Remoteproc
+in the driver role.
+
+The
+`load_fw <https://github.com/OpenAMP/openamp-system-reference/tree/main/examples/legacy_apps/examples/load_fw>`_
+is an example dedicated to demonstrating Remoteproc lifecycle management.
+
+Remoteproc Device Role
+----------------------
+
+Use of Remoteproc framework for the remote or device role is optional and when used is for
+resource table management, parsing the resource table for dynamic resource allocation or
+statically assigning the resources required for Remoteproc.
+
+Dynamic examples are:
+
+- `ZynqMP R5 <https://github.com/OpenAMP/openamp-system-reference/blob/main/examples/legacy_apps/machine/xlnx/zynqmp_r5/platform_info.c>`_
+  machine implementation example.
+
+Management using a static resource examples are:
+
+- `Multi Services Remote Example <https://github.com/OpenAMP/openamp-system-reference/blob/main/examples/zephyr/rpmsg_multi_services/src/main_remote.c>`_.
+
+Remoteproc Virtio Framework
+===========================
+
+When using Remoteproc, the
+`Virtio transport layer <https://github.com/OpenAMP/open-amp/main/lib/remoteproc/remoteproc_virtio.c>`_
+is created through it (as compared to through
+`RPMsg's Virtio <https://github.com/OpenAMP/open-amp/blob/main/lib/rpmsg/rpmsg_virtio.c>`_).
+
+Remoteproc Virtio Driver Role
+-----------------------------
+
+For the main processor driver role, Remoteproc is used
+
+- to obtain and configure resource table information.
+- create the main processor or driver side Virtio device
+
+The intent of OpenAMP Remoteproc is to remain compatible with Linux's Remoteproc.
+
+The
+`Multi Services Example <https://github.com/OpenAMP/openamp-system-reference/blob/main/examples/zephyr/rpmsg_multi_services>`_
+example uses Linux Remoteproc for the driver role implementation.
+For details refer to :ref:`RPMsg Multi Services<rpmsg-multi-services-intro>` Demo.
+
+Remoteproc Virtio Device Role
+-----------------------------
+
+For the remote processor device role, Remoteproc is used
+
+- to get resource table information populated by the Virtio driver
+- create remote or device side Virtio device
+
+The
+`Multi Services <https://github.com/OpenAMP/openamp-system-reference/blob/main/examples/zephyr/rpmsg_multi_services/src/main_remote.c>`_
+Example Remote shows Remoteproc Virtio device creation using
+:openamp_doc_link:`rproc_virtio_create_vdev <rproc_virtio_create_vdev>`
+and obtaining the resource table using Zephyr's
+`rsc_table_get <https://github.com/zephyrproject-rtos/zephyr/blob/main/subsys/ipc/open-amp/resource_table.c>`_
+function.
+
+
+RPMsg Framework
+===============
+
+The RPMsg Framework provides the IPC which is based on Virtio.
+
+When using Remoteproc, the Virtio used for RPMsg is setup by it for the main processor as the
+driver role and device role for the remote.
+
+When the implementation does not require Remoteproc, OpenAMP provides Virtio through the
+`RPMsg  Virtio Framework  <https://github.com/OpenAMP/open-amp/blob/main/lib/rpmsg/rpmsg_virtio.c>`_.
+
+The `Zephyr OpenAMP IPC Sample <https://github.com/zephyrproject-rtos/zephyr/tree/main/samples/subsys/ipc/openamp>`_
+is one demonstrating the use of Virtio through RPMsg framework using static vrings as the transport layer.
+
+The main processor Virtio device is setup as driver role, using
+:openamp_doc_link:`RPMSG_HOST <RPMSG_HOST>` passed to
+:openamp_doc_link:`rpmsg_init_vdev <rpmsg_init_vdev>`.
+
+Refer
+`Zephyr OpenAMP IPC Sample Main <https://github.com/zephyrproject-rtos/zephyr/blob/main/samples/subsys/ipc/openamp/src/main.c>`_
+for an example driver role implementation.
+
+The remote processor Virtio device is setup as device role, using
+:openamp_doc_link:`RPMSG_REMOTE <RPMSG_REMOTE>` passed to
+:openamp_doc_link:`rpmsg_init_vdev <rpmsg_init_vdev>`.
+
+Refer
+`Zephyr OpenAMP IPC Sample Remote <https://github.com/zephyrproject-rtos/zephyr/blob/main/samples/subsys/ipc/openamp/remote/src/main.c>`_
+for an example device role implementation.
+
 The `OpenAMP Framework <https://github.com/OpenAMP/open-amp>`_ uses
 `libmetal <https://github.com/OpenAMP/libmetal>`_ to provide abstractions that allows for porting
 of the OpenAMP Framework to various software environments (operating systems and bare metal
