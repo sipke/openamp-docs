@@ -378,6 +378,9 @@ via the remoteproc_ops structure which contains function pointers to each.
 The remoteproc_init API receives this structure, and its function pointers, which are then used
 by the other APIs.
 
+For example Cortex-R5 remoteproc_ops are defined in
+`zynqmp_r5_a53_rproc.c <https://github.com/OpenAMP/openamp-system-reference/blob/main/examples/legacy_apps/machine/xlnx/zynqmp_r5/zynqmp_r5_a53_rproc.c>`_
+
 .. _port-remoteproc:
 
 
@@ -435,5 +438,5 @@ If you choose to create your own backend, you can use the
 `Remoteproc VirtIO <https://github.com/OpenAMP/open-amp/blob/main/lib/remoteproc/remoteproc_virtio.c>`_
 backend as a reference.
 
-For an example of setting up Remoteproc and Virtio for a remote device refer to
-`zynqmp platform_info.c <https://github.com/OpenAMP/openamp-system-reference/blob/main/examples/legacy_apps/machine/xlnx/zynqmp/platform_info.c>`_
+For an example of setting up Remoteproc Virtio for a remote device refer to
+`zynqmp_r5 platform_info.c <https://github.com/OpenAMP/openamp-system-reference/blob/main/examples/legacy_apps/machine/xlnx/zynqmp_r5/platform_info.c>`_
