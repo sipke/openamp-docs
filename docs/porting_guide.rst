@@ -31,9 +31,11 @@ Shared Memory
 Shared memory forms the :ref:`physical layer<rpmsg-layers-work-label>` for
 :doc:`RPMsg <../docs/rpmsg_design>` protocol.
 The specific memory type and layout are implementation dependent, but should be a dedicated
-SRAM or DDR region accessible by both cores. Caching is enabled in OpenAMP with the
-`WITH_DCACHE <https://github.com/OpenAMP/open-amp/blob/main/cmake/options.cmake>`_
-cmake configuration.
+SRAM or DDR region accessible by both cores.
+Cache maintenance operations are performed by OpenAMP if the
+`WITH_DCACHE <https://github.com/OpenAMP/open-amp/blob/main/cmake/options.cmake>`_ cmake flag
+is set. It should be enabled if your shared memory region is caching and the core you are
+building for is not cache coherent with the remote side.
 
 Memory requirements are generally modest because :doc:`RPMsg <../docs/rpmsg_design>` is a
 control‑oriented protocol rather than a high‑bandwidth streaming channel. For example, using
@@ -163,7 +165,8 @@ Remoteproc Device Role
 ----------------------
 
 Use of Remoteproc framework for the remote or device role is optional and when used is for
-resource table management, dynamically or statically.
+resource table management, parsing the resource table for dynamic resource allocation or
+statically assigning the resources required for Remoteproc.
 
 Dynamic examples are:
 

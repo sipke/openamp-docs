@@ -9,6 +9,7 @@ Glossary
     AMP, `Asymmentric Multiprocessing <https://en.wikipedia.org/wiki/Asymmetric_multiprocessing>`_
     API, Application Interface
     DDR (RAM), Double Data Rate (Random Access Memory)
+    DMA, Direct Memory Access
     GPL, `GNU General Public License <https://en.wikipedia.org/wiki/GNU_General_Public_License>`_
     HAL, Hardware Abstraction Layer
     IOMMU, Input-Output Memory Management Unit

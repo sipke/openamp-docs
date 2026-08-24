@@ -14,7 +14,6 @@ at the offset location of each entry. Directly following the header are the reso
 themselves, each of which has a 32 bit type. These in remote context will likely be memory carveouts
 for locations of parts of the remote system and virtio device definitions.
 
-
 +--------------+--------------------------------------------------------------------------------+
 |     Item     |                                  Description                                   |
 +==============+================================================================================+
