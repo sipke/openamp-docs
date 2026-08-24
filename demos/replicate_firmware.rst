@@ -53,7 +53,7 @@ The main controller is responsible for loading the firmware and starting the rem
 writing start and stop to /sys/class/remoteproc/remoteproc0 and /sys/class/remoteproc/remoteproc1 alternately.
 
 The same firmware is loaded, and this is made possible as the system uses
-`Tightly Coupled Memory <https://docs.amd.com/r/en-US/ug1085-zynq-ultrascale-trm/Tightly-Coupled-Memory-Functional-Description>`_,
+`Tightly Coupled Memory <https://support.arm.com/documentation/den0042/0100/Tightly-Coupled-Memory>`_,
 so each processor is assigned its own bank of memory.
 
 The script is available in the :ref:`Demo Docker Images<docker-images-label>` as demo3.
